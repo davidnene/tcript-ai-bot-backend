@@ -1,10 +1,24 @@
 from flask import Flask, render_template, request, jsonify
+from flask_cors import CORS
 import openai
 import requests
 import os
 
 app = Flask(__name__)
-
+CORS(app)
+cors = CORS(app, resources={
+    r"/*":{
+        "origins":"*"
+    }
+})
+# @app.error_processor
+# def my_error_processor(error):
+#     return {
+#         'status_code': error.status_code,
+#         'message': error.message,
+#         'detail': error.detail
+#     }, error.status_code, error.headers
+    
 openai.api_key_path = './key'
 transcripts = []
 
@@ -18,7 +32,9 @@ def index():
 def home():
     name = request.form['name']
     audio_url = request.form['url']
+
     r = requests.get(audio_url)
+
     #print(r.headers.get('content-type'))
     with open('./audio_data/test.wav', 'wb') as test_audio:
         test_audio.write(r.content)
@@ -36,9 +52,9 @@ def home():
 @app.route('/transcripts', methods = ['POST'])
 def transcript():
     name = {'name': request.json['name']}
-    transcript_url = {'transcript_url': request.json['transcript_url']}
+    audio_url = {'audioURL': request.json['audioURL']}
 
-    r = requests.get(transcript_url['transcript_url'])
+    r = requests.get(audio_url['audioURL'])
     
     with open('./audio_data/test.wav', 'wb') as test_audio:
         test_audio.write(r.content)
